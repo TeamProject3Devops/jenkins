@@ -1,0 +1,56 @@
+pipeline {
+    agent any
+	
+	parameters {
+		string(name: 'REPOSITORY',defaultValue: '/home/srvadmin/mycomposotionTEST/artifacts_prod', description: 'store artifacts used for deployment') 
+	}
+
+    tools {
+        // Install the Maven version configured as "M3" and add it to the path.
+        maven "M3"
+    }
+
+    stages {
+        stage('Git'){
+            steps{
+                // Get some code from a GitHub repository
+                git branch: 'main',
+                    url: 'https://github.com/matthcol/movieapijee.git'
+            }
+        }
+        stage('Test') {
+                steps{
+                   // sh "mvn -DskipTests -Dmaven.test.skip package" old
+                   // Run Maven: clean, compile test-compile, test
+                   sh "mvn clean test"
+                }
+                post {  //each time we running a test, we save the result of the test
+					always{
+						junit '**/target/surefire-reports/TEST-*.xml'
+				    }
+                }
+            }
+        stage('Build') {
+            steps{
+                
+                // Run Maven on a Unix agent.
+                //sh "mvn -Dmaven.test.failure.ignore=true clean package" old
+
+                sh "mvn -DskipTests -Dmaven.skip.test package"
+
+                // To run Maven on a Windows agent, use
+                // bat "mvn -Dmaven.test.failure.ignore=true clean package"
+            }
+            post {
+                // If Maven was able to run the tests, even if some of the test
+                // failed, record the test results and archive the jar file.
+                success {
+                 
+                    //archiveArtifacts 'target/*.jar'
+                    //archiveArtifacts 'target/*.war'
+					sh "cp target/movieapi.war ${params.REPOSITORY}/" 
+                }
+            }
+        }
+    }
+}
