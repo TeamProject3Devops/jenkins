@@ -2,7 +2,7 @@ pipeline {
     agent any
 	
 	parameters {
-		string(name: 'REPOSITORY',defaultValue: '/home/srvadmin/mycomposotionTEST/artifacts_prod', description: 'store artifacts used for deployment') 
+		string(name: 'REPOSITORY',defaultValue: '/home/srvadmin/mycomposotionTEST/artifacts_dev', description: 'store artifacts used for deployment') 
 	}
 
     tools {
